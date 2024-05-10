@@ -14,6 +14,9 @@ Vue.config.productionTip = false
 import axios from 'axios'
 Vue.prototype.$http= axios
 axios.defaults.baseURL='' //后端服务器url
+Vue.prototype.$http= axios.create({
+  baseURL:'/api' //使用代理
+})
 
 new Vue({
   router,

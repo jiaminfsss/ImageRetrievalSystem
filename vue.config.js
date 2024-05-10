@@ -4,30 +4,21 @@ const { defineConfig } = require('@vue/cli-service')
 
 module.exports = defineConfig({
   transpileDependencies: true,
-  // devServer: {
-  //   onAfterSetupMiddleware: function (devServer) {
-  //     if (!devServer) {
-  //       throw new Error("webpack-dev-server is not defined");
-  //     }
-  //     devServer.app.get("/play/p", function (req, res) {
-  //       res.json({ code:1000,msg:"成功" });
-  //     });
-  //     devServer.app.get("/api/login", function (req, res) {
-  //       res.json({ code:1000,msg:"成功" });
-  //     });
-  //   },
-  //   onBeforeSetupMiddleware: function (devServer) {
-  //     if (!devServer) {
-  //       throw new Error("webpack-dev-server is not defined");
-  //     }
-  //     devServer.app.get("/play/y", function (req, res) {
-  //       res.json({code:2000,msg:"错误"})
-  //     });
-  //     devServer.app.get("/play/p", function (req, res) {
-  //       res.json({ code:1000,msg:"成功" });
-  //     });
-  //   }
-  // },
+
+  devServer: {
+    host: '127.0.0.1',
+    port: 8080, //vue项目端口
+    open: true,// vue项目启动时自动打开浏览器
+    proxy: {
+      '/api': { // '/api'是代理标识，用于告诉node，url前面是/api的就是使用代理的
+        target: "http://127.0.0.1:2020", //目标地址，一般是指后台服务器地址
+        changeOrigin: true, //是否跨域
+        pathRewrite: { // pathRewrite 的作用是把实际Request Url中的'/api'用""代替
+          '^/api': ""
+        }
+      }
+    }
+  }
 })
 
 // const { defineConfig } = require('@vue/cli-service')
