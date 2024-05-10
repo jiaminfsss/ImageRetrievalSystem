@@ -11,7 +11,7 @@
         <el-option  
           v-for="item in options"  
           :key="item.value"  
-          :label="item.label"  
+          :label="item.label"
           :value="item.value">
         </el-option>
       </el-select>
@@ -175,7 +175,7 @@ export default {
   /* 与下面的内容保持一些间距 */
   align-items: center;
 }
-
+  
 .search-title {
   /* 更改字体 */
   font-family: 'Microsoft YaHei', sans-serif;

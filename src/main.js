@@ -5,7 +5,12 @@ import router from './router'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 
+import Waterfall from 'vue-waterfall/lib/waterfall'
+import WaterfallSlot from 'vue-waterfall/lib/waterfall-slot'
+
 Vue.use(ElementUI)
+Vue.use(Waterfall)
+Vue.use(WaterfallSlot)
 // 导入全局样式
 import './assets/global.css'
 
