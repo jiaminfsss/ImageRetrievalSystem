@@ -8,6 +8,7 @@ import SketchRetrieval from '@/components/SketchRetrieval.vue'
 import TextRetrieval from '@/components/TextRetrieval.vue'
 import Group from '@/components/Group.vue'
 import Images from '@/components/Images.vue'
+import Register from '@/components/Register.vue'
 
 
 
@@ -16,6 +17,11 @@ Vue.use(VueRouter)
 const routes = [
   {path: '/',redirect:'/login'},
   {path:'/login', component:Login},
+  {
+    path:'/register',
+    component:Register
+  },
+  
   {path:'/home', component:Home,
     redirect:'/welcome',
     children:[

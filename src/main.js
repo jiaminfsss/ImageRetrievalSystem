@@ -13,7 +13,7 @@ Vue.config.productionTip = false
 
 import axios from 'axios'
 Vue.prototype.$http= axios
-axios.defaults.baseURL='' //MySQL服务器
+axios.defaults.baseURL='' //后端服务器url
 
 new Vue({
   router,
