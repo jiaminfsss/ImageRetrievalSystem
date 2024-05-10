@@ -1,60 +1,54 @@
 <template>
-  <div>
-    <div class="title-container">
-      <h2 class="search-title" style="text-align: center;">草图搜图</h2>
-    </div>
-    <el-row :gutter="20"> <!-- 使用gutter属性添加列间隔（可选） -->  
-    <el-col :span="12" class="custom-margin"> <!-- span值可以根据需要调整 -->  
-      <div style="display: flex; align-items: center;">
-      <el-button type="info" disabled>检索数据库</el-button>  
-      <el-select v-model="value" placeholder="选择" style="display: inline-block; margin-left: 10px;">  
-        <el-option  
-          v-for="item in options"  
-          :key="item.value"  
-          :label="item.label"
-          :value="item.value">
-        </el-option>
-      </el-select>
-    </div>
-    </el-col>  
-    <el-col :span="6" class="custom-select">  
-      <div style="display: flex; align-items: center;">
-      <el-upload  
-        class="upload-demo"  
-        ref="upload"  
-        action="/searchByImage"
+  <div class="container" style="display: flex; flex-direction: column; height: 100vh;">
+    <el-row>
+      <el-col span="24">
+        <div class="title-container">
+          <h2 class="search-title" style="text-align: center; font-size: 40px;">草图搜图</h2>
+        </div>
+      </el-col>
+    </el-row>
 
-        :on-success="handleSuccess"
-        :on-error="handleError"
-        :before-upload="beforeUpload"
-        :file-list="fileList"
-        :auto-upload="false"
-        multiple="false"
-        :show-file-list="true"
-        :limit="1"
-        :on-exceed="handleExceed"
-        :http-request="customHttpRequest">  
-        <el-button slot="trigger" type="primary">文件上传</el-button>  
-        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>  
-      </el-upload>
-    </div>
-    </el-col>  
-    <el-col :span="6">
-      <el-button type="primary" @click="fetchAndRenderImages">获取检索结果</el-button>
-    </el-col>
-    <div class="image-gallery">  
-    <div class="image-wrapper" v-for="(imageUrl, index) in imageUrls" :key="index">  
-      <img :src="imageUrl" alt="Image" class="gallery-image">  
-    </div>
+    <el-card>
+      <el-row>
+        <el-col span="12" class="center-items">
+          <div class="flex-container">
+            <el-tag type="info" effect="dark" style="margin-right: -5px;">检索数据库</el-tag>
+            <el-select v-model="value" placeholder="选择" style="margin-left: 10px;">
+              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
+            </el-select>
+          </div>
+        </el-col>
+        <el-col span="12" class="center-items">
+          <div class="flex-container">
+            <el-upload :headers="headers" class="upload-demo" :show-file-list="true" :file-list="fileList" ref="upload"
+              :auto-upload="false" :on-change="handleFileChange" multiple :limit="1">
+              <el-button slot="trigger" size="small" type="primary">选取图片</el-button>
+              <el-button style="margin-left: 50px;" size="small" type="success" @click="upload_img">上传并检索</el-button>
+              <div slot="tip" class="el-upload__tip">提示：只能上传jpg/png文件，且不超过2M;目前只支持上传一张图片。</div>
+            </el-upload>
+          </div>
+        </el-col>
+      </el-row>
+    </el-card>
+    <el-card shadow="hover" style="flex: 1;">
+      <vue-waterfall-easy :imgsArr="new_imageUrls" :gap="20" :height="730" :loadingDotCount='0' :imgWidth='300'>
+        <div slot-scope="props">
+          <p v-html="props.value.info"></p>
+        </div>
+      </vue-waterfall-easy>
+    </el-card>
+
   </div>
-  </el-row>
-
-</div>
 </template>
 
 
 <script>
+import vueWaterfallEasy from 'vue-waterfall-easy';
 export default {
+  components: {
+    vueWaterfallEasy
+  },
   data() {
     return {
       options: [{
@@ -69,147 +63,70 @@ export default {
       }],
       value: '',
       fileList: [],
-      imageUrls: ['src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg'],
-      new_imageUrls:['src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg','src/assets/crazing_1.jpg']
+      imageUrls: [],
+      new_imageUrls: [],
     }
   },
+
   methods: {
-    beforeUpload(file) {  
-      // 可以在这里进行文件大小和类型的检查  
-      const isJPGorPNG = file.type === 'image/jpeg' || file.type === 'image/png';  
-      const isLt500k = file.size / 1024 / 1024 < 0.5;  
-  
-      if (!isJPGorPNG) {  
-        this.$message.error('上传图片只能是 JPG/PNG 格式!');  
-        return false;  
-      }  
-      if (!isLt500k) {  
-        this.$message.error('上传图片大小不能超过 500KB!');  
-        return false;  
+    /** 处理上传的文件发生变化 */
+    handleFileChange(file, fileList) {
+      console.log(fileList)
+      const isJPGPNG = file.raw.type === 'image/jpeg' || file.raw.type === 'image/png';
+      if (!isJPGPNG) {
+        this.$message.error('只能上传 JPG/PNG 文件!');
+        // 从fileList中移除不符合要求的文件
+        return false;
       }
-      return true;  
-    }, 
-    handleSuccess(response, file, fileList) {  
-      // 假设 response.data 是一个包含图片路径的数组  
-      this.imageUrls = response.data; // 更新图片路径列表
-      // 文件上传成功后的钩子  
-      this.$message.success('图片上传成功');  
-      // 你可以在这里根据返回的数据进行页面更新或其他操作  
-      // 例如，跳转到搜索结果页面，或者显示搜索结果  
-    }, 
-    handleError(err, file, fileList) {  
-      // 文件上传失败时的钩子  
-      this.$message.error('图片上传失败: ' + err);  
-    },  
-    handleExceed(files, fileList) {  
-      // 文件超出个数限制时的钩子  
-      this.$message.warning('当前限制选择 1 个文件，本次选择了 ' + files.length + ' 个文件，共选择了 ' + (files.length + fileList.length) + ' 个文件');  
-    }, 
-    customHttpRequest(options) {  
-      // 使用自定义请求来发送文件和参数  
-      // 这里可以发送 kNeighbor 参数  
-      let formData = new FormData();  
-      formData.append('searchImage', options.file);  
-      formData.append('kNeighbor', 30);  
-  
-      // 使用 axios 或其他库发送请求  
-      this.$http.post('/searchByImage', formData).then(response => {  
-        // 处理响应  
-        options.onSuccess(response);  
-      }).catch(error => {  
-        // 处理错误  
-        options.onError(error);  
-      });  
+      this.fileList = fileList;
     },
-    fetchImage(url) {  
-      // 这里只是一个示例，实际上你可能不需要调用 API 来获取图片，除非图片是动态生成的  
-      // 通常情况下，你可以直接使用 imageUrls 列表中的 URL 来显示图片  
-      // 但如果确实需要调用 API，则可以实现如下：  
-      return axios.get(url) // 假设这是一个返回图片内容的 API（通常不是）  
-        .then(response => {  
-          // 在这里，你可能需要将 response.data 转换为 Blob 对象，并创建一个 URL 来显示它  
-          // 但这通常不是必要的，除非图片不是直接通过 URL 提供的  
-          // 这里只是一个示例，你可能需要根据实际情况来调整  
-          const urlCreator = window.URL || window.webkitURL;  
-          const imageUrl = urlCreator.createObjectURL(new Blob([response.data]));  
-          return imageUrl;  
-        });  
-    },
-    fetchAndRenderImages(){
-      this.new_imageUrls = imageUrls
+    // upload_img() {
+    //   console.log(this.fileList)
+    //   file = this.fileList[0]
+    //   let formData = new FormData();
+    //   formData.append('searchImage', file.raw);
+    //   formData.append('kNeighbor', '30');
+    //   //利用axios上传图片调用函数
+    //   this.$http.post('/searchByImage', formData).then(res => {
+    //     // 处理响应
+    //     this.$set(this, 'imageUrls', res.data);
+    //     console.log(this.new_imageUrls)
+    //   }).catch(error => {
+    //     // 处理错误
+    //     console.log(error);
+    //   });
+    // }
+    // }
+    upload_img() {
+      for (var i = 1; i < 31; i++) {
+        this.imageUrls.push(require('../assets/testpic/' + i + '.jpg'))
+      }
+      for (var i = 0; i < this.imageUrls.length; i++) {
+        this.new_imageUrls.push({ src: this.imageUrls[i], info: '<p class="text-center" style="text-align: center;">第'+ (i+1) +'张</p>' })
+      }
     }
   }
+
 }
 </script>
 
 
 <style scoped>
-.custom-margin {  
-  /* 注意：这里应用margin-left到el-col可能会影响栅格布局 */  
-  /* 你可以选择在内部div上应用样式 */  
-}  
-.custom-margin > div {  
-  margin-left: 20px; /* 这里设置你想要的左边距 */  
-  padding-left:250px;
-} 
-.custom-select > div {  
-  padding-left:250px;
-} 
-.sketch-search-page {
-  display: flex;
-  flex-direction: column;
-  /* 设置为列方向，以便标题和搜索结果垂直排列 */
-  align-items: center;
-  /* 垂直居中 */
-  justify-content: flex-start;
-  /* 水平方向从顶部开始 */
-  padding: 20px;
-}
-
 .title-container {
   width: 100%;
-  /* 确保标题容器占据整行宽度 */
   text-align: center;
-  /* 水平居中标题文本 */
   margin-bottom: 20px;
-  /* 与下面的内容保持一些间距 */
   align-items: center;
 }
-  
-.search-title {
-  /* 更改字体 */
-  font-family: 'Microsoft YaHei', sans-serif;
-  /* 你可以替换为你喜欢的字体 */
-  /* 增大字号 */
-  font-size: 45px;
-  /* 你可以根据需要调整字号大小 */
-  /* 其他可选的样式，如字体粗细、颜色等 */
-  font-weight: bold;
-  color: #333;
+.center-items {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
 
-.search-row {
-  width: 100%;
-  margin-bottom: 20px;
+.flex-container {
+  display: flex;
+  align-items: center;
 }
-.image-gallery {  
-  display: flex;  
-  flex-wrap: wrap; /* 允许图片换行 */  
-  justify-content: space-between; /* 控制图片之间的水平间距 */  
-}  
-  
-.image-wrapper {  
-  /* 这里设置图片的宽度，比如 20% 会使每行最多有 5 张图片（假设没有间隙） */  
-  flex: 0 0 20%; /* 不增长，不缩小，基础宽度为 20% */  
-  max-width: 20%; /* 防止内容溢出 */  
-  margin-bottom: 10px; /* 控制图片之间的垂直间距 */  
-  box-sizing: border-box; /* 包含 padding 和 border 在内 */  
-  padding: 5px; /* 如果需要的话，添加内边距 */  
-}  
-  
-.gallery-image {  
-  width: 100%; /* 图片宽度设置为容器宽度，实现等比例缩放 */  
-  height: auto; /* 图片高度自动，保持原始宽高比 */  
-  object-fit: cover; /* 确保图片覆盖整个容器，且不拉伸 */  
-} 
 </style>
