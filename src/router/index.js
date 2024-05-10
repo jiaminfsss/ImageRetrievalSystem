@@ -15,7 +15,7 @@ import Register from '@/components/Register.vue'
 Vue.use(VueRouter)
 
 const routes = [
-  {path: '/',redirect:'/login'},
+  {path: '/',redirect:'/sketchRetrieval'},
   {path:'/login', component:Login},
   {
     path:'/register',
