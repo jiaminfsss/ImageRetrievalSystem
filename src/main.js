@@ -12,8 +12,10 @@ import './assets/global.css'
 Vue.config.productionTip = false
 
 import axios from 'axios'
-Vue.prototype.$http= axios
-axios.defaults.baseURL='' //MySQL服务器
+Vue.prototype.$http= axios.create({
+  baseURL:'/api' //使用代理
+})
+// axios.defaults.baseURL='http://127.0.0.1:2020/' //服务器
 
 new Vue({
   router,

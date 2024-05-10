@@ -39,7 +39,7 @@ export default {
                 ],
                 password: [
                     {required:true, message:'请输入密码', trigger:'blur'},
-                    {min:3, max:8, message:'长度在3到18个字符', trigger:'blur'}
+                    {min:3, max:18, message:'长度在3到18个字符', trigger:'blur'}
                 ]
             }
         }
@@ -57,12 +57,19 @@ export default {
             this.$refs.loginFormRef.validate(valid => {
                 console.log(valid);
                 if (!valid) return
-                // const data = this.$http.post('login',this.loginForm)
-                // console(data)
-                this.$message.success("登陆成功！")
-
-                // 跳转项目主页
-                this.$router.push('/home')
+                // this.$http.post('http://localhost:2020/login', this.loginForm)
+                const formData = new FormData();
+                formData.append('username', this.loginForm.username)
+                formData.append('password', this.loginForm.password)
+                console.log(this.loginForm)
+                this.$http.post('/login',formData).then(res =>{
+                    if (res.data=='登陆成功'){
+                        this.$message.success("登陆成功！");
+                        // 跳转项目主页
+                        this.$router.push('/home');
+                    }
+                    else this.$message.error("登录失败！")
+                })
             })
         }
     }
