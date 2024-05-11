@@ -61,10 +61,33 @@
                         <span slot="title">组群管理</span>
                     </el-menu-item>
                     <!-- 图像管理 -->
-                    <el-menu-item index="/images">
-                        <i class="el-icon-document"></i>
-                        <span slot="title">图像管理</span>
-                    </el-menu-item>
+                    <el-submenu index="2">
+                        <template slot="title">
+                            <i class="el-icon-location"></i>
+                            <!-- 一级菜单文本 -->
+                            <span>图像管理</span>
+                        </template>
+                        <el-menu-item index="/privateGallery">
+                            <template slot="title">
+                                <i class="el-icon-menu"></i>
+                                <span slot="title">私人图库</span>    
+                            </template>
+                        </el-menu-item>
+                        <!-- 图像搜图 -->
+                        <el-menu-item index="/groupGallery">
+                            <template slot="title">
+                                <i class="el-icon-menu"></i>
+                                <span slot="title">群组图库</span>    
+                            </template>
+                        </el-menu-item>
+                        <!-- 文字搜图 -->
+                        <el-menu-item index="/publicGallery">
+                            <template slot="title">
+                                <i class="el-icon-menu"></i>
+                                <span slot="title">公共图库</span>    
+                            </template>
+                        </el-menu-item>
+                    </el-submenu>
                     <!-- 历史信息 -->
                     <el-menu-item index="7">
                         <i class="el-icon-setting"></i>

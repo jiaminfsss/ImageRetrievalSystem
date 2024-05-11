@@ -7,7 +7,9 @@ import ImageRetrieval from '@/components/ImageRetrieval.vue'
 import SketchRetrieval from '@/components/SketchRetrieval.vue'
 import TextRetrieval from '@/components/TextRetrieval.vue'
 import Group from '@/components/Group.vue'
-import Images from '@/components/Images.vue'
+import PublicGallery from '@/components/PublicGallery.vue'
+import PrivateGallery from '@/components/PrivateGallery.vue'
+import GroupGallery from '@/components/GroupGallery.vue'
 import Register from '@/components/Register.vue'
 
 
@@ -30,7 +32,9 @@ const routes = [
       {path:'/sketchRetrieval', component:SketchRetrieval},
       {path:'/textRetrieval', component:TextRetrieval},
       {path:'/group', component:Group},
-      {path:'/images', component:Images}
+      {path:'/privateGallery', component:PrivateGallery},
+      {path:'/groupGallery', component:GroupGallery},
+      {path:'/publicGallery', component:PublicGallery}
     ]
   }
 ]
