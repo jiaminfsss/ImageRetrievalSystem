@@ -9,13 +9,15 @@
       </el-table-column>
       <el-table-column show-overflow-tooltip v-for="item in tableLabel" :key="item.prop" :label="item.label" :width="item.width ? item.width : 125">
         <template slot-scope="scope">
-          <span style="margin-left: 10px">{{ scope.row[item.prop] }}</span>
+          <span style="margin-left: 10px" v-if="!item.type">{{ scope.row[item.prop] }}</span>
+          <el-tag size="medium" effect="light" v-if="item.type === 'tag'">{{ scope.row[item.prop] }}</el-tag>
+          <span class="el-icon-s-check" style="margin-left: 10px" v-if="item.type === 'admin'">{{ scope.row[item.prop] }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" min-width="180">
         <template slot-scope="scope">
-          <el-button size="mini" @click="handleEdit(scope.row)">编辑</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+          <el-button size="mini" icon="el-icon-star-on" @click="handleDetail(scope.row)">详情</el-button>
+          <el-button size="mini" icon="el-icon-delete" type="danger" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -29,6 +31,17 @@ export default {
     tableLabel: Array,
     config: Object,
   },
+
+  methods: {
+    //向父组件发送自定义事件
+    handleDetail(row)
+    {
+        console.log("调用了row");
+        console.log(row);
+        this.$emit('showDetail', row)
+        console.log("子组件发送了事件")
+    }
+  }
 };
 </script>
 

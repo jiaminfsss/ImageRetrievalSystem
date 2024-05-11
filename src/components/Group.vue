@@ -1,10 +1,53 @@
 <template>
   <div class="manage">
     <div class="content-container">
+      <el-dialog
+        :title="operaterType === 'detail' ? '组群详情页' : '创建组群'"
+        :visible.sync="dialogVisible"
+        width="50%"
+      >
+        <span>这是一段信息</span>
+        <el-table :data="detailData">
+          <el-table-column
+            property="gid"
+            label="组群ID"
+          ></el-table-column>
+          <el-table-column
+            property="gname"
+            label="组群名称"
+          ></el-table-column>
+          <el-table-column
+            property="gAdmain"
+            label="管理员"
+          ></el-table-column>
+          <el-table-column
+            property="memberCount"
+            label="成员人数"
+          ></el-table-column>
+          <el-table-column
+            property="imageCount"
+            label="图片总数"
+          ></el-table-column>
+          <el-table-column
+            property="tags"
+            label="组群标签"
+          ></el-table-column>
+        </el-table>
+        <span slot="footer" class="dialog-footer">
+          <el-button type="info" @click="dialogVisible = false"
+            >反馈违规</el-button
+          >
+          <el-button type="primary" @click="dialogVisible = false"
+            >确 定</el-button
+          >
+        </span>
+      </el-dialog>
       <div class="manage-header">
-        <el-button type="primary">+ 新增</el-button>
+        <el-button type="primary" icon="el-icon-circle-plus"
+          >新建群组</el-button
+        >
         <common-form inline :formLabel="formLabel" :form="searchFrom">
-          <el-button type="primary">搜索</el-button>
+          <el-button type="primary" icon="el-icon-search">搜索</el-button>
         </common-form>
       </div>
     </div>
@@ -14,6 +57,7 @@
           :tableData="tableData"
           :tableLabel="tableLabel"
           :config="config"
+          @showDetail="displayDetail()"
         ></common-table>
       </el-card>
     </div>
@@ -30,6 +74,20 @@ export default {
   },
   data() {
     return {
+      //对话框
+      dialogVisible: false,
+      operaterType: "detail",
+      //详情页面的表单
+      detailData: [
+        {
+          gid: '1',
+          gname: '组群A',
+          gAdmain: '管理员甲',
+          memberCount: 50,
+          imageCount: 200,
+          tags: '标签1, 标签2, 标签3'
+        }
+      ],
       //表格
       //生成mock数据
       tableData: [
@@ -219,6 +277,7 @@ export default {
           prop: "gid",
           label: "组群ID",
           width: "200",
+          type: "tag",
         },
         {
           prop: "gname",
@@ -229,6 +288,7 @@ export default {
           prop: "gAdmin",
           label: "组群管理员",
           width: "300",
+          type: "admin",
         },
         {
           prop: "gDesc",
@@ -270,6 +330,12 @@ export default {
       this.config.total = res.data.count;
       this.config.loading = false;
     },
+    displayDetail(row) {
+      console.log("父组件收到了事件");
+      console.log(row);
+      this.operaterType = "detail";
+      this.dialogVisible = true;
+    },
   },
   created() {
     const uid = this.$store.state.userInfo.uid;
@@ -283,7 +349,6 @@ export default {
   height: 100%;
   padding-bottom: 20px;
   overflow: hidden;
- 
 }
 .content-container {
   width: 80%;
