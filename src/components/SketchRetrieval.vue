@@ -70,7 +70,7 @@
       <vue-waterfall-easy
         :imgsArr="new_imageUrls"
         :gap="20"
-        :height="730"
+        :height="700"
         :loadingDotCount="0"
         :imgWidth="300"
       >
@@ -124,39 +124,47 @@ export default {
       }
       this.fileList = fileList;
     },
-    // upload_img() {
-    //   console.log(this.fileList)
-    //   file = this.fileList[0]
-    //   let formData = new FormData();
-    //   formData.append('searchImage', file.raw);
-    //   formData.append('kNeighbor', '30');
-    //   //利用axios上传图片调用函数
-    //   this.$http.post('/searchByImage', formData).then(res => {
-    //     // 处理响应
-    //     this.$set(this, 'imageUrls', res.data);
-    //     console.log(this.new_imageUrls)
-    //   }).catch(error => {
-    //     // 处理错误
-    //     console.log(error);
-    //   });
-    // }
-    // }
     upload_img() {
-      for (var i = 1; i < 31; i++) {
-        this.imageUrls.push(require("../assets/testpic/" + i + ".jpg"));
-      }
-      for (var i = 0; i < this.imageUrls.length; i++) {
-        this.new_imageUrls.push({
-          src: this.imageUrls[i],
-          info:
-            '<p class="text-center" style="text-align: center;">第' +
-            (i + 1) +
-            "张</p>",
-        });
-      }
-    },
-  },
-};
+      this.imageUrls = [];
+      this.new_imageUrls = [];
+      console.log(this.fileList);
+      let file = this.fileList[0];
+      let formData = new FormData();
+      formData.append('searchImage', file.raw);
+      formData.append('kNeighbor', '30');
+      //利用axios上传图片调用函数
+      this.$http.post('/searchByImage', formData).then(res => {
+        // 处理响应
+        console.log(res);
+        console.log('resdata');
+        console.log(res.data);
+        this.$set(this, 'imageUrls', res.data);
+        console.log(this.imageUrls);
+        for (var i = 0; i < 30; i++) {
+          console.log(i);
+          console.log(this.imageUrls[i]);
+          
+          let newsrc = require('../assets/ImageData/' + this.imageUrls[i] +'.jpg');
+          console.log(newsrc);
+          this.new_imageUrls.push({ src: newsrc, info: '<p class="text-center" style="text-align: center;">第' + (i + 1) + '张</p>' })
+        }
+
+        console.log(this.new_imageUrls);
+      }).catch(error => {
+        // 处理错误
+        console.log(error);
+      });
+    }
+    // upload_img() {
+    //   for (var i = 1; i < 31; i++) {
+    //     this.imageUrls.push(require('../assets/testpic/' + i + '.jpg'))
+    //   }
+    //   for (var i = 0; i < this.imageUrls.length; i++) {
+    //     this.new_imageUrls.push({ src: this.imageUrls[i], info: '<p class="text-center" style="text-align: center;">第'+ (i+1) +'张</p>' })
+    //   }
+    // }
+  }
+}
 </script>
 
 <style scoped>
@@ -166,6 +174,7 @@ export default {
   margin-bottom: 20px;
   align-items: center;
 }
+
 .center-items {
   display: flex;
   justify-content: center;
