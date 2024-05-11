@@ -25,6 +25,9 @@
 </template>
 
 <script>
+import Cookies from 'js-cookies'
+
+
 export default {
     data(){
         return {
@@ -65,6 +68,21 @@ export default {
                 this.$http.post('/login',formData).then(res =>{
                     if (res.data=='登陆成功'){
                         this.$message.success("登陆成功！");
+                        const uid = Cookies.getItem('uid')
+                        const urole = Cookies.getItem('urole');
+                        const username = Cookies.getItem('username');
+                        const gid_list = Cookies.getItem('gid_list'); //返回一个gid列表
+                        //把上面几项信息构造成一个对象
+                        const userInfo = {
+                            uid: uid,
+                            urole: urole,
+                            username: username,
+                            gid_list: gid_list
+                        }
+                        // 提交mutation来更新userInfo
+                        this.$store.commit('setUserInfo', userInfo);
+                        //提交mutation保存登录状态
+                        this.$store.commit('setLogin', true);
                         // 跳转项目主页
                         this.$router.push('/home');
                     }

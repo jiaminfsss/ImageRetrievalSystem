@@ -7,6 +7,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 
 import Waterfall from 'vue-waterfall/lib/waterfall'
 import WaterfallSlot from 'vue-waterfall/lib/waterfall-slot'
+import store from './store/index.js'
 
 Vue.use(ElementUI)
 Vue.use(Waterfall)
@@ -23,7 +24,10 @@ Vue.prototype.$http= axios.create({
   baseURL:'/api' //使用代理
 })
 
-new Vue({
+let vvve = new Vue({
+  store,
   router,
   render: h => h(App)
 }).$mount('#app')
+
+console.log('vue实例', vvve);

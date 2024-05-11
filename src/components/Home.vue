@@ -128,7 +128,7 @@
 }
 
 .el-main {
-    background-color: aliceblue;
+    background-color: #f5f5f5;
 }
 
 .el-container {
