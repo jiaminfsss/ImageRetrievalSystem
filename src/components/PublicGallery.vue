@@ -1,88 +1,105 @@
 <!-- 整合注意事项 -->
-<!-- 目前图像渲染仅与data中全局属性imageUrls绑定， refreshPublicGallery方法通过修改imageUrls的方式实现内容加载-->
-<!-- TODO 现有瀑布流不完善，待草图搜索中瀑布流完善后统一修改-->
-<!-- TODO 现有查看图片详细信息的功能尚未实现（不会使用对话框），而删除图像依赖于查看图片详细信息的功能 -->
+<!-- TODO 添加超连接-->
+<!-- TODO 确认uid保存方式与API设计 -->
 
 <template>
-    <div class="container">
-        <div class="title-container">
-            <h2 class="public-Gallery-title" style="text-align: center;">公共图库</h2>
-            <el-button type="info">跳转检索</el-button>
-        </div>
-        <!-- 中部分：四个水平排列的组件 -->
-        <div class="middle">
-            <el-row>
-                <el-col :span="6"><el-button type="info" disabled>图像路径</el-button></el-col>
-            </el-row>
-            <el-row>
-                <el-col :span="24" ><el-input class="lbl_path" placeholder="请输入内容" v-model="uploadImgPath"
-                        :disabled="true"></el-input></el-col>
-            </el-row>
-            <el-row>
-                <el-col><el-upload class="upload-demo" :show-file-list="true" :file-list="fileList" ref="upload"
-                        :auto-upload="false" :on-change="handleFileChange" multiple :limit="1">
-                        <el-button slot="trigger" size="small" type="primary">选取图片</el-button>
-                        <el-button style="margin-left: 10px;" size="small" type="success"
-                            @click="upload_img">上传图像</el-button>
-                        <div slot="tip" class="el-upload__tip">提示：只能上传jpg/png文件，且不超过2M;目前只支持一次上传一张图片。</div>
-                    </el-upload></el-col>
-            </el-row>
-        </div>
-        <div id="app">
-            <ul>
-                <li ref='waterfallItem' v-for="(item, index) in imageUrls" :key="index">
-                    <img :src="item" @click="dialogVisible = true"> 第{{ index + 1 }}张  
-                    <!-- TODO 如何确定点击的位置的图片序号，若可以确认则可以通过直接修改detailDialogImg中的属性展现对话框 -->
-                </li>
-            </ul>
-        </div>
-        <el-dialog title="图片详情页" :visible.sync="dialogVisible" width="60%" :before-close="handleClose">
-            <el-row>
+    <div class="container" style="display: flex; flex-direction: column; height: 100vh">
+        <el-row>
+            <el-col :span=24>
+                <div class="title-container">
+                    <h2 class="search-title" style="text-align: center; font-size: 40px">
+                        公共图库
+                    </h2>
+                    <el-button type="info">跳转检索</el-button>
+                    <!-- TODO 添加超连接 -->
+                </div>
+            </el-col>
+        </el-row>
 
-                <el-col :span="12">
-                    <div class="image-container">
-                        <el-image width="300px"></el-image>
+        <el-card>
+            <el-row>
+                <el-col :span="18" width class="center-items">
+                    <div class="flex-container">
+                        <el-tag type="info" effect="dark" style="margin-right: 10px">图像路径</el-tag>
+                        <el-input class="lbl_path" style="width: 100%; margin-right: 25px; margin-left: 5px;" placeholder="请输入内容" v-model="uploadImgPath"
+                            :disabled="true" />
                     </div>
                 </el-col>
-                <el-col :span="12">
-                    <div class="info-container">
-                        <p>ID: {{ detailDialogImgID }}</p>
-                        <p>上传用户: {{ detailDialogImgOwner }}</p>
-                        <p>喜爱人数: {{ detailDialogImgLikes }}</p>
+                <el-col :span="6" class="center-items">
+                    <div class="flex-container">
+                        <el-upload class="upload-demo" :show-file-list="true" :file-list="fileList" ref="upload"
+                            :auto-upload="false" :on-change="handleFileChange" multiple :limit="1" action="#">
+                            <el-button slot="trigger" size="small" type="primary"
+                                style="margin-right: 5px; margin-left: 5px;">选取图片</el-button>
+                            <el-button size="small" type="success" @click="upload_img"
+                                style="margin-right: 5px; margin-left: 5px;">上传图像<i
+                                    class="el-icon-upload el-icon--right"></i></el-button>
+                            <div slot="tip" class="el-upload__tip">
+                                提示：只能上传jpg/png文件，且不超过2M;目前只支持上传一张图片。
+                            </div>
+                        </el-upload>
                     </div>
                 </el-col>
             </el-row>
+        </el-card>
+        <el-card shadow="hover" style="flex: 1">
+            <vue-waterfall-easy :imgsArr="showImgURL" :gap="20" :height="700" :loadingDotCount="0" :imgWidth="300"
+                @click="showImgDetail">
+                <div slot-scope="props">
+                    <p v-html="props.value.info"></p>
+                </div>
+            </vue-waterfall-easy>
+        </el-card>
+        <el-dialog title="图片详情页" :visible.sync="dialogVisible" width="60%" :before-close="handleClose">
+            <el-card class="box-card">
+                <el-row>
+                    <el-col :span="12">
+                        <div class="image-container">
+                            <el-image style="width: 500px; height: 500px" :src="detailDialogImgUrl"
+                                fit="contain"></el-image>
+                        </div>
+                    </el-col>
+                    <el-col :span="12">
+                        <div class="info-container">
+                            <p class="attribute">ID: {{ detailDialogImgID }}</p>
+                            <p class="attribute">上传用户: {{ detailDialogImgOwner }}</p>
+                            <p class="attribute">喜爱人数: {{ detailDialogImgLikes }}</p>
+                            <p class="attribute">分组: {{ detailDialogImgGrp }}</p>
+                        </div>
+                    </el-col>
+                </el-row>
+            </el-card>
+
             <span slot="footer" class="dialog-footer">
-                <el-button @click="dialogVisible = false">关 闭</el-button>
-                <el-popconfirm title="确定删除这幅图像吗？" @confirm="delDetailImg"><el-button type="danger" slot="reference" >删 除</el-button></el-popconfirm>
+                <el-button @click="dialogVisible = false" class="dialog-button">关 闭</el-button>
+                <el-popconfirm title="确定删除这幅图像吗？" @confirm="delDetailImg">
+                    <el-button type="danger" slot="reference" class="dialog-button">删 除</el-button>
+                </el-popconfirm>
             </span>
         </el-dialog>
+
     </div>
 
 </template>
 
 <script>
-import { refresh } from 'less';
-
+import vueWaterfallEasy from "vue-waterfall-easy";
 export default {
+    components: {
+        vueWaterfallEasy,
+    },
     data() {
         return {
             uploadImgPath: '',
             fileList: [],
-            imageUrls: ['../assets/crazing_1.jpg'],
-            new_imageUrls: [],
-
+            showImgURL: [],
+            img_detail: [],
             dialogVisible: false,
-            detailDialogImgUrl: '../assets/crazing_1.jpg',
+            detailDialogImgUrl: "/img/1.e7936fd7.jpg",   //require('../assets/ImageData/1.jpg'),
             detailDialogImgID: '10086',
             detailDialogImgOwner: 'JM',
             detailDialogImgLikes: 5,
-
-
-
-
-            array: [] //定义空数组存储元素高度
-
+            detailDialogImgGrp: '公开'
         }
     },
 
@@ -94,37 +111,83 @@ export default {
             if (!isJPGPNG) {
                 this.$message.error('只能上传 JPG/PNG 文件!');
                 // 从fileList中移除不符合要求的文件
+                this.fileList = []
                 return false;
             }
             this.fileList = fileList;
             this.uploadImgPath = fileList[0].name
         },
         upload_img() {
+            if (this.fileList.length != 1) {
+                this.$message.error('还未选择图片');
+                return;
+            }
             let file = this.fileList[0];
             let formData = new FormData();
             formData.append('uploadImg', file.raw);
             //利用axios上传图片调用函数
             this.$http.post('/uploadPublicImg', formData).then(res => {
-                // 处理响应
 
-                this.$message('上传成功');
-                refreshPublicGallery();
+                if (res.data.code === 200) {
+                    this.$message.success('上传成功');
+                    refreshPublicGallery();
+                }
+                else {
+                    this.$message.error('上传失败');
+                    console.log(res.data.msg);
+                }
             }).catch(error => {
-                // 处理错误
+                this.$message.error('上传失败');
                 console.log(error);
             });
-
+            /* need API:
+                url: /uploadPublicImg
+                method: post
+                formData: {
+                    uploadImg: file.raw
+                    uid: // TODO uid来自前端或后端？
+                }
+                res.data: {
+                    code: 200,
+                    msg: '上传成功'
+                }
+            */
         },
         refreshPublicGallery() {
             this.$http.get('/getPublicGallery').then(res => {
                 // 处理响应
-                this.imageUrls = res.data;
-                console.log(this.new_imageUrls);
+                this.img_detail = res.data.publicGallery;
+                if (res.data.code === 200) {
+                    let res_data = [];
+                    for (let i = 0; i < this.img_detail.length; i++) {
+                        res_data.push({
+                            src: require('../assets/ImageData/' + this.img_detail[i]['path'] + '.jpg'),
+                            info: '<p class="text-center" style="text-align: center;">第' + (i + 1) + '张</p>'
+                        })
+                    }
+                    this.showImgURL = res_data;
+                }
             }).catch(error => {
                 // 处理错误
                 console.log(error);
-                console.log('asdasd');
             });
+            /* need API:
+                url: /getPublicGallery
+                method: get
+                res.data: {
+                    code: 200,
+                    msg: '获取成功',
+                    publicGallery: [
+                        {
+                            iid: 10086,
+                            path: '1',
+                            owner: 'JM',
+                            likes: 5,
+                            grp: '公开'
+                        }
+                    ]
+                }
+            */
         },
         handleClose(done) {
             done();
@@ -133,22 +196,48 @@ export default {
             let formData = new FormData();
             formData.append('iid', this.detailDialogImgID);
             //利用axios上传图片调用函数
-            this.$http.post('/delImg', formData).then(res => {
-
-                this.$message('删除成功');
-                this.dialogVisible = false
-                refreshPublicGallery();
+            this.$http.post('/delPublicImg', formData).then(res => {
+                if (res.data.code === 200) {
+                    this.$message.success('删除成功');
+                    this.dialogVisible = false
+                    refreshPublicGallery();
+                }
+                else {
+                    this.$message.error('删除失败');
+                    console.log(res.data.msg);
+                }
             }).catch(error => {
                 // 处理错误
                 console.log(error);
+                this.$message.error('删除失败');
             });
+            /* need API:
+                url: /delPublicImg
+                method: post
+                formData: {
+                    iid: 10086
+                    uid: // TODO uid来自前端或后端？
+                }
+                res.data: {
+                    code: 200,
+                    msg: '删除成功'
+                }
+            */
+        },
+
+        showImgDetail(event, { index, value }) {
+            event.preventDefault()
+            // 只有当点击到图片时才进行操作
+            this.dialogVisible = true
+            this.detailDialogImgUrl = require('@/assets/ImageData/' + this.img_detail[index]['path'] + '.jpg')
+            this.detailDialogImgID = this.img_detail[index]['iid']
+            this.detailDialogImgOwner = this.img_detail[index]['owner']
+            this.detailDialogImgLikes = this.img_detail[index]['likes']
+            this.detailDialogImgGrp = this.img_detail[index]['groupName']
         }
     },
 
     mounted() {
-//         this.$nextTick(() => {
-//     this.someMethod()
-//   })
         this.refreshPublicGallery();
     }
 }
@@ -178,10 +267,6 @@ export default {
     /* 浅蓝色背景 */
 }
 
-.lbl_path {
-    width: 600px;
-}
-
 .component {
     flex: 1 0 20%;
     /* 宽度为容器宽度的 20%，可根据需要调整 */
@@ -192,5 +277,34 @@ export default {
     /* 可选：添加边框 */
     text-align: center;
     /* 文本居中 */
+}
+
+.info-container {
+    padding: 20px;
+}
+
+.attribute {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.dialog-footer {
+    margin-top: 20px;
+}
+
+.dialog-button {
+    margin-right: 10px;
+}
+
+.l .center-items {
+    display: flex;
+    align-items: center;
+}
+
+.flex-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 </style>
