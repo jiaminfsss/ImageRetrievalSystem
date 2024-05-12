@@ -5,21 +5,12 @@
         :title="operaterType === 'detail' ? '组群详情页' : '创建组群'"
         :visible.sync="dialogVisible"
         width="50%"
+        v-if="operaterType === 'detail'"
       >
-        <span>这是一段信息</span>
         <el-table :data="detailData">
-          <el-table-column
-            property="gid"
-            label="组群ID"
-          ></el-table-column>
-          <el-table-column
-            property="gname"
-            label="组群名称"
-          ></el-table-column>
-          <el-table-column
-            property="gAdmain"
-            label="管理员"
-          ></el-table-column>
+          <el-table-column property="gid" label="组群ID"></el-table-column>
+          <el-table-column property="gname" label="组群名称"></el-table-column>
+          <el-table-column property="gAdmain" label="管理员"></el-table-column>
           <el-table-column
             property="memberCount"
             label="成员人数"
@@ -28,10 +19,7 @@
             property="imageCount"
             label="图片总数"
           ></el-table-column>
-          <el-table-column
-            property="tags"
-            label="组群标签"
-          ></el-table-column>
+          <el-table-column property="tags" label="组群标签"></el-table-column>
         </el-table>
         <span slot="footer" class="dialog-footer">
           <el-button type="info" @click="dialogVisible = false"
@@ -42,8 +30,42 @@
           >
         </span>
       </el-dialog>
+      <el-dialog
+        :title="operaterType === 'addgroup' ? '组群创建申请' : '组群详情页'"
+        :visible.sync="dialogVisible"
+        width="25%"
+        v-if="operaterType === 'addgroup'"
+      >
+        <el-form
+          ref="form"
+          :model="groupCreateForm"
+          label-width="80px"
+          size="mini"
+        >
+          <el-form-item label="组群名称">
+            <el-input v-model="groupCreateForm.gname"></el-input>
+          </el-form-item>
+          <!-- //组群创建的用途 -->
+          <el-form-item label="活动性质">
+            <el-radio-group v-model="groupCreateForm.type">
+              <el-radio label="协作与创意工作" >协作与创意工作</el-radio>
+              <el-radio label="教学与学习" >教学与学习</el-radio>
+              <el-radio label="档案与记录管理">档案与记录管理</el-radio>
+              <el-radio label="个人收藏与分享">个人收藏与分享</el-radio>
+            </el-radio-group>
+          </el-form-item>
+
+          <el-form-item label="组群描述">
+            <el-input type="textarea" v-model="groupCreateForm.desc"></el-input>
+          </el-form-item>
+          <el-form-item size="large">
+            <el-button type="primary" @click="onSubmit">立即申请</el-button>
+            <el-button>取消</el-button>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
       <div class="manage-header">
-        <el-button type="primary" icon="el-icon-circle-plus"
+        <el-button type="primary" icon="el-icon-circle-plus" @click="addGroup"
           >新建群组</el-button
         >
         <common-form inline :formLabel="formLabel" :form="searchFrom">
@@ -57,7 +79,9 @@
           :tableData="tableData"
           :tableLabel="tableLabel"
           :config="config"
-          @showDetail="displayDetail()"
+          @showDetail="displayDetail"
+          @del="delGroup"
+          v-if="!searchFrom.keyword"
         ></common-table>
       </el-card>
     </div>
@@ -74,23 +98,86 @@ export default {
   },
   data() {
     return {
+      //新建组群相关
+      groupCreateForm: {
+        gname: '',
+        type: '个人收藏与分享',
+        desc:''
+      },
       //对话框
       dialogVisible: false,
       operaterType: "detail",
       //详情页面的表单
       detailData: [
         {
-          gid: '1',
-          gname: '组群A',
-          gAdmain: '管理员甲',
+          gid: "1",
+          gname: "组群A",
+          gAdmain: "管理员甲",
           memberCount: 50,
           imageCount: 200,
-          tags: '标签1, 标签2, 标签3'
-        }
+          tags: "标签1, 标签2, 标签3",
+        },
       ],
       //表格
       //生成mock数据
-      tableData: [
+      tableData: [],
+      tableLabel: [
+        {
+          prop: "gid",
+          label: "组群ID",
+          width: "200",
+          type: "tag",
+        },
+        {
+          prop: "gname",
+          label: "组群名称",
+          width: "300",
+        },
+        {
+          prop: "gAdmin",
+          label: "组群管理员",
+          width: "300",
+          type: "admin",
+        },
+        {
+          prop: "gDesc",
+          label: "组群描述",
+          width: "300",
+        },
+      ],
+      config: {
+        page: 1,
+        total: 30,
+        loading: false,
+      },
+      searchFrom: {
+        keyword: "",
+      },
+      formLabel: [
+        {
+          bind: "keyword",
+          label: "",
+          type: "input",
+        },
+      ],
+    };
+  },
+
+  methods: {
+    getList(userid) {
+      console.log("getList");
+      this.config.loading = true;
+      // this.$http
+      //   .get("/api/user/getGroupInfoByUid", {
+      //     params: {
+      //       uid: userid,
+      //       page: this.config.page,
+      //     },
+      //   })
+      //   .then((res) => {
+      //     this.tableData = res.data.list;
+      //   });
+      (this.tableData = [
         {
           gid: "G001",
           gname: "Group 1",
@@ -271,64 +358,9 @@ export default {
           gDesc: "这是组群30的描述",
           gAdmin: "Admin User 30",
         },
-      ],
-      tableLabel: [
-        {
-          prop: "gid",
-          label: "组群ID",
-          width: "200",
-          type: "tag",
-        },
-        {
-          prop: "gname",
-          label: "组群名称",
-          width: "300",
-        },
-        {
-          prop: "gAdmin",
-          label: "组群管理员",
-          width: "300",
-          type: "admin",
-        },
-        {
-          prop: "gDesc",
-          label: "组群描述",
-          width: "300",
-        },
-      ],
-      config: {
-        page: 1,
-        total: 30,
-        loading: false,
-      },
-      searchFrom: {
-        keyword: "",
-      },
-      formLabel: [
-        {
-          bind: "keyword",
-          label: "",
-          type: "input",
-        },
-      ],
-    };
-  },
-
-  methods: {
-    getList(userid) {
-      this.config.loading = true;
-      this.$http
-        .get("/api/user/getGroupInfoByUid", {
-          params: {
-            uid: userid,
-            page: this.config.page,
-          },
-        })
-        .then((res) => {
-          this.tableData = res.data.list;
-        });
-      this.config.total = res.data.count;
-      this.config.loading = false;
+      ]),
+        // this.config.total = res.data.count;
+        (this.config.loading = false);
     },
     displayDetail(row) {
       console.log("父组件收到了事件");
@@ -336,10 +368,50 @@ export default {
       this.operaterType = "detail";
       this.dialogVisible = true;
     },
+    delGroup(row) {
+      console.log("父组件删除");
+      console.log(row);
+      // let gid = row.gid;
+      let userID = this.$store.state.userInfo.uid ? 0 : 1;
+      this.$confirm("此操作将退出该群组, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          //调用删除接口位置
+          this.$http
+            .get("api/user/del", {
+              params: {
+                uid: userID,
+                gid: row.gid,
+              },
+            })
+            .then((res) => {
+              console.log(res);
+              this.$message({
+                type: "success",
+                message: "删除成功!",
+              });
+              this.getList(userID); //更新表格
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除",
+          });
+        });
+    },
+    addGroup() {
+      this.operaterType = "addgroup";
+      this.dialogVisible = true;
+    },
   },
   created() {
-    const uid = this.$store.state.userInfo.uid;
-    // getList(uid);
+    const uid = this.$store.state.userInfo.uid ? 0 : 1;
+    console.log("userID", uid);
+    this.getList(uid);
   },
 };
 </script>

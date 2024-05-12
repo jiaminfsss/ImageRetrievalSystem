@@ -40,6 +40,12 @@ export default {
         console.log(row);
         this.$emit('showDetail', row)
         console.log("子组件发送了事件")
+    },
+    handleDelete(row) {
+      console.log("子组件删除");
+      console.log(row);
+      this.$emit("del", row);
+      console.log("子组件发送了删除事件")
     }
   }
 };
