@@ -14,7 +14,7 @@
           <span class="el-icon-s-check" style="margin-left: 10px" v-if="item.type === 'admin'">{{ scope.row[item.prop] }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" min-width="180">
+      <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button size="mini" icon="el-icon-star-on" @click="handleDetail(scope.row)">详情</el-button>
           <el-button size="mini" icon="el-icon-delete" type="danger" @click="handleDelete(scope.row)">删除</el-button>

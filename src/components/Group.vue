@@ -2,7 +2,7 @@
   <div class="manage">
     <div class="content-container">
       <el-dialog
-        :title="operaterType === 'detail' ? '组群详情页' : '创建组群'"
+        :title="组群详情页"
         :visible.sync="dialogVisible"
         width="50%"
         v-if="operaterType === 'detail'"
@@ -19,19 +19,37 @@
             property="imageCount"
             label="图片总数"
           ></el-table-column>
-          <el-table-column property="tags" label="组群标签"></el-table-column>
+          <!-- <el-table-column property="tags" label="组群标签"></el-table-column> -->
+          <el-table-column label="组群标签" width="250">
+            <template slot-scope="scope">
+              <el-col :span="24">
+                <el-row wrap>
+                  <el-col
+                    v-for="(tag, index) in scope.row.tags"
+                    :key="index"
+                    :span="6"
+                    class="tag-col"
+                  >
+                    <el-tag :type="getColorByContent(tag)" size="mini">{{
+                      tag
+                    }}</el-tag>
+                  </el-col>
+                </el-row>
+              </el-col>
+            </template>
+          </el-table-column>
         </el-table>
-        <span slot="footer" class="dialog-footer">
-          <el-button type="info" @click="dialogVisible = false"
+        <span slot="footer">
+          <el-button type="info" size="small" @click="reportViolatation"
             >反馈违规</el-button
           >
-          <el-button type="primary" @click="dialogVisible = false"
+          <el-button type="primary" size="small" @click="dialogVisible = false"
             >确 定</el-button
           >
         </span>
       </el-dialog>
       <el-dialog
-        :title="operaterType === 'addgroup' ? '组群创建申请' : '组群详情页'"
+        :title="组群创建申请"
         :visible.sync="dialogVisible"
         width="25%"
         v-if="operaterType === 'addgroup'"
@@ -43,33 +61,87 @@
           size="mini"
         >
           <el-form-item label="组群名称">
-            <el-input v-model="groupCreateForm.gname"></el-input>
+            <el-input v-model="groupCreateForm.gname" maxlength="10" show-word-limit placeholder="给你的组群取一个响亮的名字吧~~"></el-input>
           </el-form-item>
           <!-- //组群创建的用途 -->
           <el-form-item label="活动性质">
             <el-radio-group v-model="groupCreateForm.type">
-              <el-radio label="协作与创意工作" >协作与创意工作</el-radio>
-              <el-radio label="教学与学习" >教学与学习</el-radio>
+              <el-radio label="协作与创意工作">协作与创意工作</el-radio>
+              <el-radio label="教学与学习">教学与学习</el-radio>
               <el-radio label="档案与记录管理">档案与记录管理</el-radio>
               <el-radio label="个人收藏与分享">个人收藏与分享</el-radio>
             </el-radio-group>
           </el-form-item>
 
           <el-form-item label="组群描述">
-            <el-input type="textarea" v-model="groupCreateForm.desc"></el-input>
+            <el-input
+              type="textarea"
+              v-model="groupCreateForm.desc"
+              maxlength="30"
+              show-word-limit
+              placeholder="在这里写下你的故事，让它成为别人难忘的记忆..."
+            ></el-input>
           </el-form-item>
-          <el-form-item size="large">
-            <el-button type="primary" @click="onSubmit">立即申请</el-button>
-            <el-button>取消</el-button>
+          <el-form-item>
+            <el-button type="primary" @click="ApplyCreateGroup"
+              >立即申请</el-button
+            >
+            <el-button @click="dialogVisible = false">取消</el-button>
           </el-form-item>
         </el-form>
+      </el-dialog>
+      <el-dialog
+        :title="'搜索结果'"
+        :visible.sync="dialogVisible"
+        width="50%"
+        v-if="operaterType === 'searchgroup'"
+      >
+        <el-table :data="SearchDataForm">
+          <el-table-column property="gid" label="组群ID"></el-table-column>
+          <el-table-column property="gname" label="组群名称"></el-table-column>
+          <el-table-column property="gAdmain" label="管理员"></el-table-column>
+          <el-table-column
+            property="memberCount"
+            label="成员人数"
+          ></el-table-column>
+          <el-table-column label="组群标签" width="250">
+            <template slot-scope="scope">
+              <el-col :span="24">
+                <el-row wrap>
+                  <el-col
+                    v-for="(tag, index) in scope.row.tags"
+                    :key="index"
+                    :span="6"
+                    class="tag-col"
+                  >
+                    <el-tag :type="getColorByContent(tag)" size="mini">{{
+                      tag
+                    }}</el-tag>
+                  </el-col>
+                </el-row>
+              </el-col>
+            </template>
+          </el-table-column>
+          <el-table-column label="">
+            <template slot-scope="scope">
+              <el-button
+                size="mini"
+                icon="el-icon-circle-plus-outline"
+                @click="applyJoin(scope.row)"
+                >申请加入</el-button
+              >
+            </template>
+          </el-table-column>
+        </el-table>
       </el-dialog>
       <div class="manage-header">
         <el-button type="primary" icon="el-icon-circle-plus" @click="addGroup"
           >新建群组</el-button
         >
         <common-form inline :formLabel="formLabel" :form="searchFrom">
-          <el-button type="primary" icon="el-icon-search">搜索</el-button>
+          <el-button type="primary" icon="el-icon-search" @click="searchGroup"
+            >搜索</el-button
+          >
         </common-form>
       </div>
     </div>
@@ -81,7 +153,6 @@
           :config="config"
           @showDetail="displayDetail"
           @del="delGroup"
-          v-if="!searchFrom.keyword"
         ></common-table>
       </el-card>
     </div>
@@ -89,6 +160,8 @@
 </template>
 
 <script>
+import sha256 from "js-sha256";
+
 import CommonForm from "./CommonForm.vue";
 import CommonTable from "./CommonTable.vue";
 export default {
@@ -98,11 +171,54 @@ export default {
   },
   data() {
     return {
+      //标签颜色
+      colors: [
+        "primary",
+        "success",
+        "warning",
+        "danger",
+        "info",
+        "light",
+        "dark",
+      ],
+      //搜索群组数据相关
+      SearchDataForm: [
+        {
+          gid: "G101",
+          gname: "组群A",
+          gAdmain: "管理员甲",
+          memberCount: 124,
+          tags: ["扁平化风", "材质设计", "长阴影"],
+        },
+        {
+          gid: "G102",
+          gname: "组群B",
+          gAdmain: "管理员乙",
+          memberCount: 50,
+          tags: ["MBE风", "手绘风", "卡通风", "渐变色", "极简主义"],
+        },
+        {
+          gid: "G103",
+          gname: "组群C",
+          gAdmain: "管理员丙",
+          memberCount: 17,
+          tags: ["矢量插画", "水彩画风", "抽象艺术"],
+        },
+        {
+          gid: "G104",
+          gname: "组群D",
+          gAdmain: "管理员丁",
+          memberCount: 458,
+          tags: ["印象派风", "古典复古", "3D渲染", "AI生成", "油画风"],
+        },
+      ],
+      //当前选中群组
+      currentGid: "",
       //新建组群相关
       groupCreateForm: {
-        gname: '',
-        type: '个人收藏与分享',
-        desc:''
+        gname: "",
+        type: "个人收藏与分享",
+        desc: "",
       },
       //对话框
       dialogVisible: false,
@@ -115,7 +231,7 @@ export default {
           gAdmain: "管理员甲",
           memberCount: 50,
           imageCount: 200,
-          tags: "标签1, 标签2, 标签3",
+          tags: ["印象派风", "古典复古", "3D渲染", "AI生成", "油画风"],
         },
       ],
       //表格
@@ -152,11 +268,12 @@ export default {
       },
       searchFrom: {
         keyword: "",
+        
       },
       formLabel: [
         {
           bind: "keyword",
-          label: "",
+          label: "输入群号或者群名称",
           type: "input",
         },
       ],
@@ -164,6 +281,7 @@ export default {
   },
 
   methods: {
+    //获取已加入群组
     getList(userid) {
       console.log("getList");
       this.config.loading = true;
@@ -367,7 +485,9 @@ export default {
       console.log(row);
       this.operaterType = "detail";
       this.dialogVisible = true;
+      this.gid = row.gid;
     },
+    //删除群组
     delGroup(row) {
       console.log("父组件删除");
       console.log(row);
@@ -403,9 +523,118 @@ export default {
           });
         });
     },
+    //添加群组按钮触发对话框
     addGroup() {
       this.operaterType = "addgroup";
       this.dialogVisible = true;
+    },
+    //申请创建群组提交
+    ApplyCreateGroup() {
+      // 把groupCreateForm的数据通过api/createGroup 提交到后端
+      this.$http
+        .post("api/createGroup", {
+          gname: this.groupCreateForm.gname,
+          gDesc: this.groupCreateForm.gDesc,
+          gAdmin: this.groupCreateForm.gAdmin,
+        })
+        .then((res) => {
+          console.log(res);
+          this.$message({
+            type: "success",
+            message: "申请已提交，待管理员审核!",
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          this.$message({
+            type: "error",
+            message: "申请失败，请检查网络连接!",
+          });
+        })
+        .finally(() => {
+          this.dialogVisible = false;
+          groupCreateForm = {
+            gname: "",
+            type: "个人收藏与分享",
+            desc: "",
+          };
+        });
+    },
+    //反馈违规接口
+    reportViolatation() {
+      this.$http
+        .post("api/reportViolatation", {
+          uid: this.$store.state.userInfo.uid,
+          gid: this.currentGid,
+          reason: "",
+        })
+        .then((res) => {
+          console.log(res);
+          this.$message({
+            type: "success",
+            message: "举报成功，等待管理员反馈！",
+          });
+        });
+      // this.$message({
+      //   type: "success",
+      //   message: "举报成功，等待管理员反馈！",
+      // });
+      // this.dialogVisible = false;
+    },
+    //搜索群组按钮触发函数
+    searchGroup() {
+      if (!this.searchFrom.keyword) {
+        this.$message({
+          type: "error",
+          message: "请输入搜索内容！",
+        });
+        return;
+      }
+      //调用的时候清空结果数组
+      // this.SearchDataForm = [];
+      //调用搜索群组接口api/searchGroup
+      // this.$http
+      //   .get("api/searchGroup", {
+      //     params: {
+      //       keyword: this.searchFrom.keyword,
+      //     },
+      //   })
+      //   .then((res) => {
+      //     console.log(res);
+      //     this.SearchDataForm = res.data.SearchDataForm;
+      //   });
+      this.operaterType = "searchgroup";
+      this.dialogVisible = true;
+    },
+
+    //申请加入群组
+    applyJoin(row) {
+      console.log("row.gid", row.gid);
+      this.$http
+        .post("api/applyJoin", {
+          uid: this.$store.state.userInfo.uid,
+          gid: row.gid,
+        })
+        .then((res) => {
+          console.log(res);
+          this.$message({
+            type: "success",
+            message: "申请已提交，等待管理员审核!",
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          this.$message({
+            type: "error",
+            message: "加入申请失败！",
+          });
+        });
+    },
+    //标签颜色抽取器
+    getColorByContent(content) {
+      const hash = sha256(content);
+      const colorIndex = parseInt(hash.slice(-4), 16) % this.colors.length;
+      return this.colors[colorIndex];
     },
   },
   created() {
@@ -453,5 +682,10 @@ export default {
   justify-content: center;
   align-items: center; */
   width: 80%;
+}
+
+.tag-col {
+  display: inline-block; /* 使el-col内部元素水平排列 */
+  margin-right: 8px; /* 添加间距 */
 }
 </style>

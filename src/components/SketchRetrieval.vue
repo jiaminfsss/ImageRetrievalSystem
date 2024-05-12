@@ -45,10 +45,13 @@
               ref="upload"
               :auto-upload="false"
               :on-change="handleFileChange"
-              multiple
               :limit="1"
             >
-              <el-button slot="trigger" size="small" type="primary"
+              <el-button
+                slot="trigger"
+                size="small"
+                type="primary"
+                icon="el-icon-folder-opened"
                 >选取图片</el-button
               >
               <el-button
@@ -56,8 +59,8 @@
                 size="small"
                 type="success"
                 @click="upload_img"
-                >上传并检索</el-button
-              >
+                >上传并检索<i class="el-icon-upload el-icon--right"></i
+              ></el-button>
               <div slot="tip" class="el-upload__tip">
                 提示：只能上传jpg/png文件，且不超过2M;目前只支持上传一张图片。
               </div>
@@ -125,46 +128,69 @@ export default {
       this.fileList = fileList;
     },
     upload_img() {
+      if(this.fileList.length == 0){
+        this.$message({
+            type: "info",
+            message: "请先上传图片",
+          });
+        return;
+      }
       this.imageUrls = [];
       this.new_imageUrls = [];
       console.log(this.fileList);
       let file = this.fileList[0];
       let formData = new FormData();
-      formData.append('searchImage', file.raw);
-      formData.append('kNeighbor', '30');
+      formData.append("searchImage", file.raw);
+      formData.append("kNeighbor", "30");
       //利用axios上传图片调用函数
-      this.$http.post('/searchByImage', formData).then(res => {
-        // 处理响应
-        console.log(res);
-        console.log('resdata');
-        console.log(res.data);
-        this.$set(this, 'imageUrls', res.data);
-        console.log(this.imageUrls);
-        for (var i = 0; i < 30; i++) {
-          console.log(i);
-          console.log(this.imageUrls[i]);
-          
-          let newsrc = require('../assets/ImageData/' + this.imageUrls[i] +'.jpg');
-          console.log(newsrc);
-          this.new_imageUrls.push({ src: newsrc, info: '<p class="text-center" style="text-align: center;">第' + (i + 1) + '张</p>' })
-        }
+      this.$http
+        .post("/searchByImage", formData)
+        .then((res) => {
+          // 处理响应
+          console.log(res);
+          console.log("resdata");
+          console.log(res.data);
+          this.$set(this, "imageUrls", res.data);
+          console.log(this.imageUrls);
+          for (var i = 0; i < 30; i++) {
+            console.log(i);
+            console.log(this.imageUrls[i]);
 
-        console.log(this.new_imageUrls);
-      }).catch(error => {
-        // 处理错误
-        console.log(error);
-      });
-    }
+            let newsrc = require("../assets/ImageData/" +
+              this.imageUrls[i] +
+              ".jpg");
+            console.log(newsrc);
+            this.new_imageUrls.push({
+              src: newsrc,
+              info:
+                '<p class="text-center" style="text-align: center;">第' +
+                (i + 1) +
+                "张</p>",
+            });
+          }
+          this.fileList = []
+          console.log(this.new_imageUrls);
+        })
+        .catch((error) => {
+          // 处理错误
+          console.log(error);
+        });
+    },
     // upload_img() {
+    //   if(this.fileList.length == 0){
+    //     this.$message.error("请先上传图片!");
+    //     return;
+    //   }
     //   for (var i = 1; i < 31; i++) {
     //     this.imageUrls.push(require('../assets/testpic/' + i + '.jpg'))
     //   }
     //   for (var i = 0; i < this.imageUrls.length; i++) {
     //     this.new_imageUrls.push({ src: this.imageUrls[i], info: '<p class="text-center" style="text-align: center;">第'+ (i+1) +'张</p>' })
     //   }
+    //   this.fileList = []
     // }
-  }
-}
+  },
+};
 </script>
 
 <style scoped>

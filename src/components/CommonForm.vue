@@ -3,7 +3,7 @@
     <el-form-item v-for="item in formLabel" :key="item.bind">
       <el-input
         v-model="form[item.bind]"
-        :placeholder="'请输入' + item.label"
+        :placeholder="item.label"
         v-if="item.type === 'input'"
       ></el-input>
       <el-select

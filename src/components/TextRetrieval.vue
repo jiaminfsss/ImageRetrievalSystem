@@ -74,6 +74,14 @@ export default {
 
     methods: {
         searchtext() {
+            //如果this.searchText没有输入则发出“请先输入图片描述！”
+            if(this.searchText === ""){
+                this.$message({
+                    type: "info",
+                    message: "请先输入图片描述！",
+          });
+                return;
+            }
             this.imageUrls = [];
             this.new_imageUrls = [];
             console.log(this.searchText);
